@@ -1,0 +1,44 @@
+from sklearn.ensemble import StackingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# Assuming X_train, X_test, y_train, y_test are already defined
+# Splitting the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+
+# Initialize base classifiers
+base_classifiers = [
+    ('dt', DecisionTreeClassifier(random_state=42)),
+    ('knn', KNeighborsClassifier()),
+    ('svc', SVC()),
+    ('rf', RandomForestClassifier(random_state=42))]
+
+# Initialize meta-classifier
+meta_classifier = LogisticRegression(penalty = 'l2', C = 0.01)
+
+# Initialize stacking classifier
+stacking_classifier = StackingClassifier(estimators=base_classifiers, final_estimator=meta_classifier,cv=4)
+
+# Train the stacking classifier
+stacking_classifier.fit(X_train, y_train)
+
+# Make predictions
+y_pred_stacking = stacking_classifier.predict(X_test)
+
+# Evaluate the stacking classifier
+print("evaluation of logistic regression as meta classifier:")
+cross_val_scores = cross_val_score(stacking_classifier, X, y, cv=5)
+accuracy_stacking = accuracy_score(y_test, y_pred_stacking)
+precision_stacking = metrics.precision_score(y_test, y_pred_stacking)
+recall_stacking = metrics.recall_score(y_test, y_pred_stacking)
+f1_stacking = metrics.f1_score(y_test, y_pred_stacking)
+print("Mean cross-validation score:", cross_val_scores.mean())
+print("Stacking Classifier Accuracy:", accuracy_stacking)
+print("Stacking Classifier Precision:", precision_stacking)
+print("Stacking Classifier Recall:", recall_stacking)
+print("Stacking Classifier F1 Score:", f1_stacking)
