@@ -1,0 +1,56 @@
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import StackingClassifier
+from xgboost import XGBClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+# Assuming you have your data loaded and preprocessed as X and y
+
+# Splitting the data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Base classifiers
+base_classifiers = [
+    ('dt', DecisionTreeClassifier()),
+    ('knn', KNeighborsClassifier()),
+    ('svm', SVC()),
+    ('rf', RandomForestClassifier())
+]
+
+# Meta classifiers layer 1
+meta_classifiers_layer1 = [
+    ('xgboost', XGBClassifier()),
+    ('svm', SVC()),
+    ('nn', MLPClassifier(hidden_layer_sizes=(100,), max_iter=500, random_state=42))
+]
+
+# Meta classifier layer 2
+meta_classifier_layer2 = LogisticRegression(penalty='l2', C=0.01)
+
+# Stacking classifier
+stacking_clf = StackingClassifier(
+    estimators=base_classifiers,
+    final_estimator=StackingClassifier(estimators=meta_classifiers_layer1, final_estimator=meta_classifier_layer2, cv=4),cv=3
+)
+
+# Training the stacking classifier
+stacking_clf.fit(X_train, y_train)
+
+# Predicting the test set
+y_pred_stacking = stacking_clf.predict(X_test)
+
+# Evaluating the model
+print("evalution metrics for multilayered lr stacking classifier")
+
+print("Accuracy:", stacking_clf.score(X_test, y_test))
+print("Precision:", metrics.precision_score(y_test, stacking_clf.predict(X_test)))
+print("Recall:", metrics.recall_score(y_test, stacking_clf.predict(X_test)))
+print("F1 Score:", metrics.f1_score(y_test, stacking_clf.predict(X_test)))
+print("Cross-validation score:", np.mean(cross_val_score(stacking_clf, X, y, cv=5)))		
+
